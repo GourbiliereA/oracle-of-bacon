@@ -20,8 +20,6 @@ public class RedisRepository {
 	}
 	
     public List<String> getLastTenSearches() {
-        // TODO implement last 10 searches
-    	
     	List<String> lastTenSearches = new ArrayList<String>();
     	
         if (jedis != null) {
