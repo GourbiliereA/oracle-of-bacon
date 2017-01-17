@@ -2,11 +2,9 @@ package com.serli.oracle.of.bacon.repository;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import static com.mongodb.client.model.Filters.*;
 import org.bson.Document;
-
-import java.util.Optional;
 
 public class MongoDbRepository {
 
@@ -16,8 +14,9 @@ public class MongoDbRepository {
         mongoClient = new MongoClient("localhost", 27017);
     }
 
-    public Optional<Document> getActorByName(String name) {
-        // TODO implement actor fetch
-        return null;
+    public Document getActorByName(String name) {
+    	MongoDatabase db = mongoClient.getDatabase("mongo-bacon");
+    	MongoCollection<Document> actors = db.getCollection("actors");
+        return actors.find(eq("name:ID", name)).first();
     }
 }
