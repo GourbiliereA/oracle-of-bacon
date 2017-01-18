@@ -1,4 +1,4 @@
-# Orcacle of Bacon
+# Orcacle of Bacon by CAILLEAUD Pierre & GOURBILIERE Alex
 
 ## Présentation
 
