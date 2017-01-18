@@ -11,10 +11,13 @@ import com.google.gson.JsonObject;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.config.HttpClientConfig;
-import io.searchbox.core.Search;
-import io.searchbox.core.SearchResult;
+import io.searchbox.core.Suggest;
+import io.searchbox.core.SuggestResult;
 
 public class ElasticSearchRepository {
+    
+    public static final String INDEX_NAME = "person";
+    public static final String TYPE_NAME = "actor";
 
     private final JestClient jestClient;
 
@@ -40,42 +43,35 @@ public class ElasticSearchRepository {
 
         StringBuffer query = new StringBuffer()
         		.append("{")
-        		.append("	\"query\" : {")
-        		.append("		\"match\": {")
-        		.append("			\"name\": \"" + searchQuery + "\"")
-        		.append(" 	}")
-        		.append("	},")
-        		.append("	\"suggest\" : {")
-        		.append("		\"my-suggestion\" : {")
-        		.append("			\"text\" : \"" + searchQuery + "\",")
-        		.append("			\"term\" : {")
-        		.append("  			\"field\" : \"name\"")
-        		.append("			}")
+        		.append("	\"actor\" : {")
+        		.append("		\"text\" : \"" + searchQuery + "\",")
+        		.append("		\"completion\" : {")
+        		.append("  			\"field\" : \"tag_suggest\"")
         		.append("		}")
         		.append("	}")
         		.append("}");
       
-        Search search = (Search) new Search.Builder(query.toString())
-        .addIndex("person")
-        .addType("actor")
+        Suggest suggest = (Suggest) new Suggest.Builder(query.toString())
+        .addIndex(INDEX_NAME)
         .build();
         
-        SearchResult searchResult = null;
+        SuggestResult suggestResult = null;
     	try {
     		// Execute the request
-			searchResult = jestClient.execute(search);
+    		suggestResult = jestClient.execute(suggest);
 		} catch (IOException e) {
 			System.out.println("Error when executing ElastingSearch's request.\n" + e.getMessage());
 		}
-
+    	
     	JsonObject result = null;
-    	if (searchResult != null) {
-    		result = searchResult.getJsonObject();
+    	if (suggestResult != null) {
+    		result = suggestResult.getJsonObject();
     	}
     	
     	// Put the actors found in the array of suggestions
-    	JsonArray jsonArray = result.getAsJsonObject("hits").getAsJsonArray("hits");
-    	for (JsonElement actor : jsonArray) {
+    	JsonObject jsonObject = (JsonObject) result.getAsJsonArray("actor").get(0);
+    	JsonArray actors = jsonObject.get("options").getAsJsonArray();
+    	for (JsonElement actor : actors) {
     		String actorName = actor.getAsJsonObject().getAsJsonObject("_source").get("name").getAsString();
     		suggestList.add(actorName);
     	}
